@@ -25,7 +25,8 @@ n_blocks = 16           # 残差模块数量
 
 # 学习参数
 checkpoint = None   # 预训练模型路径，如果不存在则为None
-batch_size = 400    # 批大小
+# batch_size = 400    # 批大小
+batch_size = 128    # 批大小（1066 128比较合适，一个epoch大概7min）
 start_epoch = 1     # 轮数起始位置
 epochs = 130        # 迭代轮数
 workers = 4         # 工作线程数
@@ -79,6 +80,9 @@ def main():
         shuffle=True,
         num_workers=workers,
         pin_memory=True) 
+    
+    n_iter = len(train_loader)
+    print(f"batch_num = {n_iter}")
 
     # 开始逐轮训练
     for epoch in range(start_epoch, epochs+1):
@@ -88,6 +92,8 @@ def main():
         loss_epoch = AverageMeter()  # 统计损失函数
 
         n_iter = len(train_loader)
+
+        print(f"epoch = {epoch}/{epochs}")
 
         # 按批处理
         for i, (lr_imgs, hr_imgs) in enumerate(train_loader):
@@ -119,7 +125,8 @@ def main():
                 writer.add_image('SRResNet/epoch_'+str(epoch)+'_3', make_grid(hr_imgs[:4,:3,:,:].cpu(), nrow=4, normalize=True),epoch)
 
             # 打印结果
-            print("第 "+str(i)+ " 个batch训练结束")
+            if i % 100 == 0:
+                print(f"\tbatch = {i}/{n_iter}")
  
         # 手动释放内存              
         del lr_imgs, hr_imgs, sr_imgs
@@ -130,10 +137,11 @@ def main():
         # 保存预训练模型
         torch.save({
             'epoch': epoch,
-            'model': model.module.state_dict(),
+            # 'model': model.module.state_dict(),
+            'model': model.state_dict(),
             'optimizer': optimizer.state_dict()
         }, 'results/mycheckpoint_srresnet.pth')
-    
+
     # 训练结束关闭监控
     writer.close()
 
