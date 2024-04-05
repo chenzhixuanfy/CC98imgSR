@@ -8,6 +8,8 @@
 
 `conda activate cc98pic`
 
+`pip install -r requirements.txt`
+
 # 图片下载
 ## Preparing
 在项目根目录下创建`account.json`，并填入自己的 CC98 用户名和密码：
@@ -18,8 +20,11 @@
 }
 ```
 
-## 参数说明
-`python cc98_pic.py -h`
+## 单纯下载图片
+运行`CC98imgDownload.py`
+
+输入以下命令查看帮助：
+`python CC98imgDownload.py -h`
 
 # 超分辨率图片生成
 ## 模型训练
@@ -34,4 +39,9 @@
 4. 训练 GAN 网络：`python train_srgan.py`
 5. 使用`eval.py`、`test.py`评估模型
 
-## cc98图片超分辨率生成
+## 下载cc98图片并生成高分辨率图片
+分辨率高的图片后缀为sr
+
+运行`CC98imgSR.py`
+以下命令查看帮助：
+`python CC98imgSR.py -h`
