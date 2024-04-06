@@ -25,7 +25,6 @@ n_blocks = 16           # 残差模块数量
 
 # 学习参数
 checkpoint = None   # 预训练模型路径，如果不存在则为None
-# batch_size = 400    # 批大小
 batch_size = 128    # 批大小（1066 128比较合适，一个epoch大概7min）
 start_epoch = 1     # 轮数起始位置
 epochs = 130        # 迭代轮数

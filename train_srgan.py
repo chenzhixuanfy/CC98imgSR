@@ -31,7 +31,7 @@ n_blocks_d = 8     # 卷积模块数量
 fc_size_d = 1024  # 全连接层连接数
 
 # 学习参数
-batch_size = 128    # 批大小
+batch_size = 64    # 批大小
 start_epoch = 1     # 迭代起始位置
 epochs = 50         # 迭代轮数
 checkpoint = None   # SRGAN预训练模型, 如果没有则填None
@@ -113,6 +113,9 @@ def main():
                                                shuffle=True,
                                                num_workers=workers,
                                                pin_memory=True)
+    
+    n_iter = len(train_loader)
+    print(f"batch_num = {n_iter}")
 
     # 开始逐轮训练
     for epoch in range(start_epoch, epochs+1):
@@ -128,7 +131,9 @@ def main():
         losses_d = utils.AverageMeter()  # 判别损失
 
         n_iter = len(train_loader)
-
+        
+        print(f"epoch = {epoch}/{epochs}")
+        
         # 按批处理
         for i, (lr_imgs, hr_imgs) in enumerate(train_loader):
 
@@ -196,7 +201,8 @@ def main():
                 writer.add_image('SRGAN/epoch_'+str(epoch)+'_3', make_grid(hr_imgs[:4, :3, :, :].cpu(), nrow=4, normalize=True), epoch)
 
             # 打印结果
-            print("第 " + str(i) + " 个batch结束")
+            if i % 100 == 0:
+                print(f"\tbatch = {i}/{n_iter}")
 
         # 手动释放内存
         del lr_imgs, hr_imgs, sr_imgs, hr_imgs_in_vgg_space, sr_imgs_in_vgg_space, hr_discriminated, sr_discriminated  # 手工清除掉缓存

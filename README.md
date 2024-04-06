@@ -35,8 +35,8 @@
 │ ├─ val2017/
 ```
 2. 运行`create_data_lists.py`创建文件列表
-3. 训练残差网络：`python train_srresnet.py`
-4. 训练 GAN 网络：`python train_srgan.py`
+3. 使用残差网络超分辨率重建。训练残差网络：`python train_srresnet.py`
+4. 使用GAN网络超分辨率重建。训练 GAN 网络：`python train_srgan.py`
 5. 使用`eval.py`、`test.py`评估模型
 
 ## 下载cc98图片并生成高分辨率图片
