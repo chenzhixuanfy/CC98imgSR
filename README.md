@@ -42,6 +42,7 @@
 ## 下载cc98图片并生成高分辨率图片
 分辨率高的图片后缀为sr
 
+模型文件路径：`./results/checkpoint_srgan.pth`
 运行`CC98imgSR.py`
 以下命令查看帮助：
 `python CC98imgSR.py -h`
