@@ -45,7 +45,7 @@ lr = 1e-4           # 学习率
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ngpu = 1                  # 用来运行的gpu数量
 cudnn.benchmark = True    # 对卷积进行加速
-writer = SummaryWriter()  # 实时监控     使用命令 tensorboard --logdir runs  进行查看
+writer = SummaryWriter("runs/srgan")  # 实时监控     使用命令 tensorboard --logdir runs  进行查看
 
 
 def main():
@@ -133,7 +133,7 @@ def main():
         n_iter = len(train_loader)
         
         print(f"epoch = {epoch}/{epochs}")
-        
+
         # 按批处理
         for i, (lr_imgs, hr_imgs) in enumerate(train_loader):
 

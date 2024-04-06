@@ -37,7 +37,7 @@ ngpu = 1           # 用来运行的gpu数量
 
 cudnn.benchmark = True # 对卷积进行加速
 
-writer = SummaryWriter() # 实时监控     使用命令 tensorboard --logdir runs  进行查看
+writer = SummaryWriter("runs/srresnet") # 实时监控     使用命令 tensorboard --logdir runs  进行查看
 
 def main():
     """
