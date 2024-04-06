@@ -129,7 +129,7 @@ class CC98PIC:
             self.write_log("https://www.cc98.org/topic/" + str(data[0]["topicId"])) # 现在的帖子 title 都变成null了
 
             # 不同格式的帖子代码。典型帖子id：5855172、3870053、3690188
-            pattern = re.compile(r'\[img\](.*?)\[/img\]|\[upload=jpg\](.*?)\[/upload\]|\[upload=jpg,1\](.*?)\[/upload\]')
+            pattern = re.compile(r'\[img\](.*?)\[/img\]|\[upload=jpg\](.*?)\[/upload\]|\[upload=jpg,0\](.*?)\[/upload\]|\[upload=jpg,1\](.*?)\[/upload\]')
 
             matched_URLs = pattern.findall(data[0]["content"]) # [(url11, url12, url13), (url21, url22, url23), ...] 的形式
             
