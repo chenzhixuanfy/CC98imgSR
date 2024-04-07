@@ -31,7 +31,7 @@ n_blocks_d = 8     # 卷积模块数量
 fc_size_d = 1024  # 全连接层连接数
 
 # 学习参数
-batch_size = 64    # 批大小
+batch_size = 128    # 批大小
 start_epoch = 1     # 迭代起始位置
 epochs = 50         # 迭代轮数
 checkpoint = None   # SRGAN预训练模型, 如果没有则填None
@@ -43,7 +43,7 @@ lr = 1e-4           # 学习率
 
 # 设备参数
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-ngpu = 1                  # 用来运行的gpu数量
+ngpu = 2                  # 用来运行的gpu数量
 cudnn.benchmark = True    # 对卷积进行加速
 writer = SummaryWriter("runs/srgan")  # 实时监控     使用命令 tensorboard --logdir runs  进行查看
 
