@@ -9,6 +9,50 @@ import torchvision
 import math
 
 
+class ChannelAttention(nn.Module):
+    """
+    通道注意力机制
+    """
+    def __init__(self, in_planes, ratio=16):
+        super(ChannelAttention, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+
+        self.fc1   = nn.Conv2d(in_planes, in_planes // 16, 1, bias=False)
+        self.relu1 = nn.ReLU()
+        self.fc2   = nn.Conv2d(in_planes // 16, in_planes, 1, bias=False)
+
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_out = self.fc2(self.relu1(self.fc1(self.avg_pool(x))))
+        max_out = self.fc2(self.relu1(self.fc1(self.max_pool(x))))
+        out = avg_out + max_out
+        return self.sigmoid(out)
+    
+
+
+class SpatialAttention(nn.Module):
+    """
+    空间注意力机制
+    """
+    def __init__(self, kernel_size=7):
+        super(SpatialAttention, self).__init__()
+
+        assert kernel_size in (3, 7), 'kernel size must be 3 or 7'
+        padding = 3 if kernel_size == 7 else 1
+
+        self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=padding, bias=False)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_out = torch.mean(x, dim=1, keepdim=True)
+        max_out, _ = torch.max(x, dim=1, keepdim=True)
+        x = torch.cat([avg_out, max_out], dim=1)
+        x = self.conv1(x)
+        return self.sigmoid(x)
+
+
 class ConvolutionalBlock(nn.Module):
     """
     卷积模块,由卷积层, BN归一化层, 激活层构成.
@@ -133,6 +177,39 @@ class ResidualBlock(nn.Module):
 
         return output
 
+class Res_attention_block(nn.Module):
+    """
+    残差注意力模块, 包含两个卷积模块和注意力机制
+    """
+    def __init__(self, kernel_size=3, n_channels=64):
+        """
+        :参数 kernel_size: 核大小
+        :参数 n_channels: 输入和输出通道数（由于是ResNet网络，需要做跳连，因此输入和输出通道数是一致的）
+        """
+        super(Res_attention_block, self).__init__()
+
+        self.conv_block1 = ConvolutionalBlock(in_channels=n_channels, out_channels=n_channels, kernel_size=kernel_size,
+                                              batch_norm=True, activation='PReLu')
+        self.conv_block2 = ConvolutionalBlock(in_channels=n_channels, out_channels=n_channels, kernel_size=kernel_size,
+                                              batch_norm=True, activation=None)
+        self.ca = ChannelAttention(n_channels)
+        self.sa = SpatialAttention()
+    def forward(self, input):
+        """
+        前向传播.
+
+        :参数 input: 输入图像集，张量表示，大小为 (N, n_channels, w, h)
+        :返回: 输出图像集，张量表示，大小为 (N, n_channels, w, h)
+        """
+        residual = input
+        output = self.conv_block1(input)
+        output = self.conv_block2(output)
+        output = self.ca(output) * output
+        output = self.sa(output) * output
+        output = output + residual
+        return output
+
+
 
 class SRResNet(nn.Module):
     """
@@ -192,10 +269,67 @@ class SRResNet(nn.Module):
 
         return sr_imgs
 
+class SRResNet_attention(nn.Module):
+    """
+    带有注意力机制的SRResNet模型
+    """
+    def __init__(self, large_kernel_size=9, small_kernel_size=3, n_channels=64, n_blocks=16, scaling_factor=4):
+        """
+        :参数 large_kernel_size: 第一层卷积和最后一层卷积核大小
+        :参数 small_kernel_size: 中间层卷积核大小
+        :参数 n_channels: 中间层通道数
+        :参数 n_blocks: 残差模块数
+        :参数 scaling_factor: 放大比例
+        """
+        super(SRResNet_attention, self).__init__()
+
+        # 放大比例必须为 2、 4 或 8
+        scaling_factor = int(scaling_factor)
+        assert scaling_factor in {2, 4, 8}, "放大比例必须为 2、 4 或 8!"
+
+        # 第一个卷积块
+        self.conv_block1 = ConvolutionalBlock(in_channels=3, out_channels=n_channels, kernel_size=large_kernel_size,
+                                              batch_norm=False, activation='PReLu')
+
+        # 一系列残差模块, 每个残差模块包含一个跳连接
+        self.residual_blocks = nn.Sequential(
+            *[Res_attention_block(kernel_size=small_kernel_size, n_channels=n_channels) for i in range(n_blocks)])
+
+        # 第二个卷积块
+        self.conv_block2 = ConvolutionalBlock(in_channels=n_channels, out_channels=n_channels,
+                                              kernel_size=small_kernel_size,
+                                              batch_norm=True, activation=None)
+
+        # 放大通过子像素卷积模块实现, 每个模块放大两倍
+        n_subpixel_convolution_blocks = int(math.log2(scaling_factor))
+        self.subpixel_convolutional_blocks = nn.Sequential(
+            *[SubPixelConvolutionalBlock(kernel_size=small_kernel_size, n_channels=n_channels, scaling_factor=2) for i
+              in range(n_subpixel_convolution_blocks)])
+
+        # 最后一个卷积模块
+        self.conv_block3 = ConvolutionalBlock(in_channels=n_channels, out_channels=3, kernel_size=large_kernel_size,
+                                              batch_norm=False, activation='Tanh')
+    def forward(self, lr_imgs):
+        """
+        前向传播.
+
+        :参数 lr_imgs: 低分辨率输入图像集, 张量表示，大小为 (N, 3, w, h)
+        :返回: 高分辨率输出图像集, 张量表示， 大小为 (N, 3, w * scaling factor, h * scaling factor)
+        """
+        output = self.conv_block1(lr_imgs)
+        residual = output
+        output = self.residual_blocks(output)
+        output = self.conv_block2(output)
+        output = output + residual
+        output = self.subpixel_convolutional_blocks(output)
+        sr_imgs = self.conv_block3(output)
+        return sr_imgs
+
+
 
 class Generator(nn.Module): 
     """
-    生成器模型，其结构与SRResNet完全一致.
+    生成器模型，其结构与SRResNet或者SRResNet_attention完全一致.
     """
 
     def __init__(self, large_kernel_size=9, small_kernel_size=3, n_channels=64, n_blocks=16, scaling_factor=4):
@@ -209,6 +343,8 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.net = SRResNet(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
                             n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
+        self.net_attention = SRResNet_attention(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
+                            n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
 
     def forward(self, lr_imgs):
         """
@@ -217,7 +353,8 @@ class Generator(nn.Module):
         参数 lr_imgs: 低精度图像 (N, 3, w, h)
         返回: 超分重建图像 (N, 3, w * scaling factor, h * scaling factor)
         """
-        sr_imgs = self.net(lr_imgs)  # (N, n_channels, w * scaling factor, h * scaling factor)
+        # sr_imgs = self.net(lr_imgs)  # (N, n_channels, w * scaling factor, h * scaling factor)
+        sr_imgs = self.net_attention(lr_imgs)
 
         return sr_imgs
 

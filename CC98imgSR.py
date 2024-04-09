@@ -225,7 +225,7 @@ class CC98PIC:
             os.makedirs(img_directory)
 
     # 初始化并开始爬虫   
-    def crawler_start(self, mode = 0, id = 5855172):
+    def crawler_start(self, mode = 0, id = 3609055):
         # 新建log文件
         with open("log.txt", "w"):
             pass
@@ -260,7 +260,7 @@ def parser_args():
     # metavar 在通过-h显示 usage 说明中的参数名称，对于必选参数默认就是参数名称，对于可选参数默认是全大写的参数名称.。这里通过设置为空一律不显示。
     parser.add_argument('-m', '--mode', type=int, choices=[0, 1], default=0, metavar='',
                         help='脚本执行模式：mode=0，下载一个特定帖子的图片；mode=1，持续下载新帖图片。默认mode=0。')
-    parser.add_argument('-i', '--id', type=int, default=5855172, metavar='',
+    parser.add_argument('-i', '--id', type=int, default=3609055, metavar='',
                         help='当mode=0时，指定抓取的帖子id。')
     args = parser.parse_args()
     
