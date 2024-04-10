@@ -19,7 +19,7 @@ n_channels = 64         # 中间层通道数
 n_blocks = 16           # 残差模块数量
 scaling_factor = 4      # 放大比例
 # device = torch.device('cpu')
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 if __name__ == '__main__':

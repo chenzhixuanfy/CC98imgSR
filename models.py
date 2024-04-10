@@ -194,6 +194,7 @@ class Res_attention_block(nn.Module):
                                               batch_norm=True, activation=None)
         self.ca = ChannelAttention(n_channels)
         self.sa = SpatialAttention()
+        
     def forward(self, input):
         """
         前向传播.
@@ -341,8 +342,8 @@ class Generator(nn.Module):
         参数 scaling_factor: 放大比例
         """
         super(Generator, self).__init__()
-        self.net = SRResNet(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
-                            n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
+        # self.net = SRResNet(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
+        #                     n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
         self.net_attention = SRResNet_attention(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
                             n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
 

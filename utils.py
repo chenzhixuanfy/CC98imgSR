@@ -10,7 +10,7 @@ import torchvision.transforms.functional as FT
 import torch
 import math
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # 常量
 rgb_weights = torch.FloatTensor([65.481, 128.553, 24.966]).to(device)

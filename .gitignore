@@ -7,3 +7,4 @@ runs
 .idea
 results
 test.ipynb
+*.out

@@ -22,7 +22,9 @@ large_kernel_size_g = 9   # 第一层卷积和最后一层卷积的核大小
 small_kernel_size_g = 3   # 中间层卷积的核大小
 n_channels_g = 64         # 中间层通道数
 n_blocks_g = 16           # 残差模块数量
-srresnet_checkpoint = "./results/checkpoint_srresnet.pth"  # 预训练的SRResNet模型，用来初始化
+# srresnet_checkpoint = "./results/srresnet.pth"  # 预训练的SRResNet模型，用来初始化
+# srresnet_checkpoint = "./results/srresnet_attention.pth"  # 预训练的SRResNet模型，用来初始化
+srresnet_checkpoint = "./results/mycheckpoint_srresnet.pth"  # 预训练的SRResNet模型，用来初始化
 
 # 判别器模型参数
 kernel_size_d = 3  # 所有卷积模块的核大小
@@ -42,7 +44,7 @@ beta = 1e-3         # 判别损失乘子
 lr = 1e-4           # 学习率
 
 # 设备参数
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 ngpu = 2                  # 用来运行的gpu数量
 cudnn.benchmark = True    # 对卷积进行加速
 writer = SummaryWriter("runs/srgan")  # 实时监控     使用命令 tensorboard --logdir runs  进行查看
@@ -87,7 +89,8 @@ def main():
 
     # 加载预训练模型
     srresnetcheckpoint = torch.load(srresnet_checkpoint)
-    generator.net.load_state_dict(srresnetcheckpoint['model'])
+    # generator.net.load_state_dict(srresnetcheckpoint['model'])
+    generator.net_attention.load_state_dict(srresnetcheckpoint['model'])
 
     if checkpoint is not None:
         checkpoint = torch.load(checkpoint)
@@ -208,9 +211,13 @@ def main():
         del lr_imgs, hr_imgs, sr_imgs, hr_imgs_in_vgg_space, sr_imgs_in_vgg_space, hr_discriminated, sr_discriminated  # 手工清除掉缓存
 
         # 监控损失值变化
-        writer.add_scalar('SRGAN/Loss_c', losses_c.val, epoch)
-        writer.add_scalar('SRGAN/Loss_a', losses_a.val, epoch)
-        writer.add_scalar('SRGAN/Loss_d', losses_d.val, epoch)
+        # writer.add_scalar('SRGAN/Loss_c', losses_c.val, epoch)
+        # writer.add_scalar('SRGAN/Loss_a', losses_a.val, epoch)
+        # writer.add_scalar('SRGAN/Loss_d', losses_d.val, epoch)
+
+        writer.add_scalar('SRGAN/Loss_c', losses_c.avg, epoch)
+        writer.add_scalar('SRGAN/Loss_a', losses_a.avg, epoch)
+        writer.add_scalar('SRGAN/Loss_d', losses_d.avg, epoch)
 
         # 保存预训练模型
         torch.save({

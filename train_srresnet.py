@@ -7,8 +7,7 @@ import torch
 from torch import nn
 from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
-# from models import SRResNet
-from models import SRResNet_attention
+from models import SRResNet_attention, SRResNet
 from datasets import SRDataset
 from utils import *
 
@@ -26,15 +25,15 @@ n_blocks = 16           # 残差模块数量
 
 # 学习参数
 checkpoint = None   # 预训练模型路径，如果不存在则为None
-batch_size = 256    # 批大小（1066 128比较合适，一个epoch大概7min）
+batch_size = 256    # 批大小（1066 128比较合适，一个epoch大概7min，双2080ti 256比较合适）
 start_epoch = 1     # 轮数起始位置
 epochs = 130        # 迭代轮数
 workers = 4         # 工作线程数
 lr = 1e-4           # 学习率
 
 # 设备参数
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-ngpu = 2           # 用来运行的gpu数量
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+ngpu = 1           # 用来运行的gpu数量
 
 cudnn.benchmark = True # 对卷积进行加速
 
@@ -52,6 +51,12 @@ def main():
                         n_channels=n_channels,
                         n_blocks=n_blocks,
                         scaling_factor=scaling_factor)
+    # model = SRResNet(large_kernel_size=large_kernel_size,
+    #                 small_kernel_size=small_kernel_size,
+    #                 n_channels=n_channels,
+    #                 n_blocks=n_blocks,
+    #                 scaling_factor=scaling_factor)
+    
     # 初始化优化器
     optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, model.parameters()),lr=lr)
 
@@ -132,7 +137,8 @@ def main():
         del lr_imgs, hr_imgs, sr_imgs
 
         # 监控损失值变化
-        writer.add_scalar('SRResNet/MSE_Loss', loss_epoch.val, epoch)    
+        # writer.add_scalar('SRResNet/MSE_Loss', loss_epoch.val, epoch)
+        writer.add_scalar('SRResNet/MSE_Loss', loss_epoch.avg, epoch) # 使用平均损失
 
         # 保存预训练模型
         torch.save({
