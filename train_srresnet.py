@@ -24,7 +24,9 @@ n_channels = 64         # 中间层通道数
 n_blocks = 16           # 残差模块数量
 
 # 学习参数
-checkpoint = None   # 预训练模型路径，如果不存在则为None
+# checkpoint = None   # 预训练模型路径，如果不存在则为None
+# checkpoint = "./results/srresnet_attention.pth"  # 预训练的SRResNet模型，用来初始化
+checkpoint = "./results/mycheckpoint_srresnet.pth"  # 预训练的SRResNet模型，用来初始化
 batch_size = 256    # 批大小（1066 128比较合适，一个epoch大概7min，双2080ti 256比较合适）
 start_epoch = 1     # 轮数起始位置
 epochs = 130        # 迭代轮数
@@ -33,7 +35,7 @@ lr = 1e-4           # 学习率
 
 # 设备参数
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-ngpu = 1           # 用来运行的gpu数量
+ngpu = 2           # 用来运行的gpu数量
 
 cudnn.benchmark = True # 对卷积进行加速
 

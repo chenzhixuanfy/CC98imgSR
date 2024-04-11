@@ -23,8 +23,8 @@ small_kernel_size_g = 3   # 中间层卷积的核大小
 n_channels_g = 64         # 中间层通道数
 n_blocks_g = 16           # 残差模块数量
 # srresnet_checkpoint = "./results/srresnet.pth"  # 预训练的SRResNet模型，用来初始化
-# srresnet_checkpoint = "./results/srresnet_attention.pth"  # 预训练的SRResNet模型，用来初始化
-srresnet_checkpoint = "./results/mycheckpoint_srresnet.pth"  # 预训练的SRResNet模型，用来初始化
+srresnet_checkpoint = "./results/srresnet_attention.pth"  # 预训练的SRResNet模型，用来初始化
+# srresnet_checkpoint = "./results/mycheckpoint_srresnet.pth"  # 预训练的SRResNet模型，用来初始化
 
 # 判别器模型参数
 kernel_size_d = 3  # 所有卷积模块的核大小
@@ -89,8 +89,15 @@ def main():
 
     # 加载预训练模型
     srresnetcheckpoint = torch.load(srresnet_checkpoint)
+
+    # 解决 Missing key(s) in state_dict 问题（https://zhuanlan.zhihu.com/p/649591959）
+    new_state_dict = {}
+    for k, v in srresnetcheckpoint['model'].items():
+        name = k.replace('module.', '')  # 去掉"module."前缀
+        new_state_dict[name] = v
+
     # generator.net.load_state_dict(srresnetcheckpoint['model'])
-    generator.net_attention.load_state_dict(srresnetcheckpoint['model'])
+    generator.net_attention.load_state_dict(new_state_dict)
 
     if checkpoint is not None:
         checkpoint = torch.load(checkpoint)
