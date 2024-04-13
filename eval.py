@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # 预训练模型
     srgan_checkpoint = "./results/checkpoint_srgan.pth"
-    #srresnet_checkpoint = "./results/checkpoint_srresnet.pth"
+    # srgan_checkpoint = "./results/srgan_attention.pth"
 
     # 加载模型SRResNet 或 SRGAN
     checkpoint = torch.load(srgan_checkpoint)

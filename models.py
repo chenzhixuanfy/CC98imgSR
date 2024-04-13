@@ -342,10 +342,10 @@ class Generator(nn.Module):
         参数 scaling_factor: 放大比例
         """
         super(Generator, self).__init__()
-        # self.net = SRResNet(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
-        #                     n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
-        self.net_attention = SRResNet_attention(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
+        self.net = SRResNet(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
                             n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
+        # self.net_attention = SRResNet_attention(large_kernel_size=large_kernel_size, small_kernel_size=small_kernel_size,
+        #                     n_channels=n_channels, n_blocks=n_blocks, scaling_factor=scaling_factor)
 
     def forward(self, lr_imgs):
         """
@@ -354,8 +354,8 @@ class Generator(nn.Module):
         参数 lr_imgs: 低精度图像 (N, 3, w, h)
         返回: 超分重建图像 (N, 3, w * scaling factor, h * scaling factor)
         """
-        # sr_imgs = self.net(lr_imgs)  # (N, n_channels, w * scaling factor, h * scaling factor)
-        sr_imgs = self.net_attention(lr_imgs)
+        sr_imgs = self.net(lr_imgs)  # (N, n_channels, w * scaling factor, h * scaling factor)
+        # sr_imgs = self.net_attention(lr_imgs)
 
         return sr_imgs
 

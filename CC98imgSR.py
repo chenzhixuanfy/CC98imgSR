@@ -16,7 +16,7 @@ from models import SRResNet, Generator
 import time
 from PIL import Image
 
-# 一些典型帖子id：4142494、3609055
+# 一些典型帖子id：4142494、3609055、4908723、3889302、4005622、4005433
 
 class CC98PIC:
     def __init__(self):
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     # device = torch.device('cpu')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # 预训练模型
-    srgan_checkpoint = "./results/checkpoint_srgan.pth"
+    srgan_checkpoint = "./results/srgan_attention.pth"
     # srresnet_checkpoint = "./results/checkpoint_srresnet.pth"
 
     # 加载模型SRResNet 或 SRGAN
