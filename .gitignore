@@ -1,9 +1,9 @@
 account.json
 log.txt
-img
+./img
 CocoData
 data
-runs
+./runs
 .idea
 results
 test.ipynb
